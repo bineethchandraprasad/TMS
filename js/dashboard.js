@@ -52,6 +52,17 @@ export class DashboardManager {
                 }
             }
         });
+        
+        // Walk-in form submission
+        document.addEventListener('submit', (e) => {
+            if (e.target.id === 'walk-in-form') {
+                e.preventDefault();
+                const tableId = document.getElementById('table-details-content').getAttribute('data-table-id');
+                if (tableId) {
+                    this.seatWalkInGuest(tableId);
+                }
+            }
+        });
     }
     
     // Start interval to update dashboard
@@ -66,75 +77,75 @@ export class DashboardManager {
     }
 
     // Add this method to DashboardManager class
-seatWalkInGuest(tableId) {
-    // Get form values
-    const guestName = document.getElementById('walk-in-name').value;
-    const partySize = parseInt(document.getElementById('walk-in-party-size').value);
-    const phone = document.getElementById('walk-in-phone').value || '';
-    
-    // Get current time
-    const now = new Date();
-    const currentDate = this.formatDate(now);
-    const currentTime = now.toTimeString().substring(0, 5); // HH:MM format
-    
-    // Create a new booking ID
-    const bookingId = `B${Date.now()}`;
-    
-    // Create booking object
-    const newBooking = {
-        id: bookingId,
-        guestName,
-        phone,
-        email: '',
-        date: currentDate,
-        time: currentTime,
-        partySize,
-        duration: this.storageManager.getData('restaurantInfo')?.reservationDuration || 90,
-        specialRequests: 'Walk-in guest',
-        tableId,
-        status: 'confirmed'
-    };
-    
-    // Add to bookings array
-    const bookings = this.storageManager.getData('bookings') || [];
-    bookings.push(newBooking);
-    this.storageManager.saveData('bookings', bookings);
-    
-    // Update table status
-    this.changeTableStatus(tableId, 'occupied', bookingId);
-    
-    // Close modal
-    document.getElementById('table-details-modal').classList.remove('active');
-    
-    // Show notification
-    this.showNotification(`Table ${tableId} assigned to ${guestName}`, 'success');
-}
+    seatWalkInGuest(tableId) {
+        // Get form values
+        const guestName = document.getElementById('walk-in-name').value;
+        const partySize = parseInt(document.getElementById('walk-in-party-size').value);
+        const phone = document.getElementById('walk-in-phone').value || '';
+        
+        // Get current time
+        const now = new Date();
+        const currentDate = this.formatDate(now);
+        const currentTime = now.toTimeString().substring(0, 5); // HH:MM format
+        
+        // Create a new booking ID
+        const bookingId = `B${Date.now()}`;
+        
+        // Create booking object
+        const newBooking = {
+            id: bookingId,
+            guestName,
+            phone,
+            email: '',
+            date: currentDate,
+            time: currentTime,
+            partySize,
+            duration: this.storageManager.getData('restaurantInfo')?.reservationDuration || 90,
+            specialRequests: 'Walk-in guest',
+            tableId,
+            status: 'confirmed'
+        };
+        
+        // Add to bookings array
+        const bookings = this.storageManager.getData('bookings') || [];
+        bookings.push(newBooking);
+        this.storageManager.saveData('bookings', bookings);
+        
+        // Update table status
+        this.changeTableStatus(tableId, 'occupied', bookingId);
+        
+        // Close modal
+        document.getElementById('table-details-modal').classList.remove('active');
+        
+        // Show notification
+        this.showNotification(`Table ${tableId} assigned to ${guestName}`, 'success');
+    }
 
-showNotification(message, type = 'info') {
-    // Create notification element
-    const notification = document.createElement('div');
-    notification.className = `notification ${type}`;
-    notification.textContent = message;
-    
-    // Add to document
-    document.body.appendChild(notification);
-    
-    // Remove after 3 seconds
-    setTimeout(() => {
-        notification.classList.add('fade-out');
+    showNotification(message, type = 'info') {
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.textContent = message;
+        
+        // Add to document
+        document.body.appendChild(notification);
+        
+        // Remove after 3 seconds
         setTimeout(() => {
-            notification.remove();
-        }, 300);
-    }, 3000);
-}
+            notification.classList.add('fade-out');
+            setTimeout(() => {
+                notification.remove();
+            }, 300);
+        }, 3000);
+    }
 
-// Add this helper method if it doesn't exist already
-formatDate(date) {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-}
+    // Add this helper method if it doesn't exist already
+    formatDate(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
     
     // Update all dashboard elements
     updateDashboard() {
@@ -171,11 +182,11 @@ formatDate(date) {
             
             // Create table element
             const tableElement = document.createElement('div');
-tableElement.className = `dashboard-table ${table.shape} ${tableStatus.status}`;
-tableElement.setAttribute('data-table-id', table.id);
+            tableElement.className = `dashboard-table ${table.shape} ${tableStatus.status}`;
+            tableElement.setAttribute('data-table-id', table.id);
 
-tableElement.style.left = `${table.x}px`;
-tableElement.style.top = `${table.y}px`;
+            tableElement.style.left = `${table.x}px`;
+            tableElement.style.top = `${table.y}px`;
             
             // Add table number
             const tableNumber = document.createElement('div');
@@ -466,42 +477,35 @@ tableElement.style.top = `${table.y}px`;
         modalContent.appendChild(tableDetails);
         
         // Show appropriate status buttons based on current status
-if (tableStatus.status === 'available') {
-    // Add walk-in form for available tables
-    const walkInForm = document.createElement('div');
-    walkInForm.innerHTML = `
-        <h3>Seat Walk-in Guest</h3>
-        <form id="walk-in-form">
-            <div class="form-group">
-                <label for="walk-in-name">Guest Name</label>
-                <input type="text" id="walk-in-name" required>
-            </div>
-            <div class="form-group">
-                <label for="walk-in-party-size">Party Size</label>
-                <input type="number" id="walk-in-party-size" min="1" max="${table.capacity}" value="2" required>
-            </div>
-            <div class="form-group">
-                <label for="walk-in-phone">Phone (Optional)</label>
-                <input type="tel" id="walk-in-phone">
-            </div>
-            <div class="form-actions">
-                <button type="submit" class="btn primary">
-                    <i class="fas fa-chair"></i> Seat Now
-                </button>
-            </div>
-        </form>
-    `;
-    
-    // Attach event listener to walk-in form
-    modalContent.appendChild(walkInForm);
-    
-    // Handle walk-in form submission
-    const walkInFormEl = walkInForm.querySelector('#walk-in-form');
-    walkInFormEl.addEventListener('submit', (e) => {
-        e.preventDefault();
-        this.seatWalkInGuest(tableId);
-    });
-} else if (tableStatus.status === 'occupied') {
+        if (tableStatus.status === 'available') {
+            // Add walk-in form for available tables
+            const walkInForm = document.createElement('div');
+            walkInForm.innerHTML = `
+                <h3>Seat Walk-in Guest</h3>
+                <form id="walk-in-form">
+                    <div class="form-group">
+                        <label for="walk-in-name">Guest Name</label>
+                        <input type="text" id="walk-in-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="walk-in-party-size">Party Size</label>
+                        <input type="number" id="walk-in-party-size" min="1" max="${table.capacity}" value="2" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="walk-in-phone">Phone (Optional)</label>
+                        <input type="tel" id="walk-in-phone">
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn primary">
+                            <i class="fas fa-chair"></i> Seat Now
+                        </button>
+                    </div>
+                </form>
+            `;
+            
+            // Attach to modal content
+            modalContent.appendChild(walkInForm);
+        } else if (tableStatus.status === 'occupied') {
             document.querySelector('.status-btn.occupied').disabled = true;
         } else if (tableStatus.status === 'cleaning') {
             document.querySelector('.status-btn.cleaning').disabled = true;
@@ -512,45 +516,45 @@ if (tableStatus.status === 'available') {
     }
     
     // Change table status
-changeTableStatus(tableId, newStatus, reservationId = null) {
-    // Find table status
-    const tableStatusIndex = this.tableStatuses.findIndex(s => s.tableId === tableId);
-    
-    if (tableStatusIndex !== -1) {
-        const currentStatus = this.tableStatuses[tableStatusIndex];
+    changeTableStatus(tableId, newStatus, reservationId = null) {
+        // Find table status
+        const tableStatusIndex = this.tableStatuses.findIndex(s => s.tableId === tableId);
         
-        // Handle reservation implications
-        if (currentStatus.status === 'reserved' && newStatus !== 'reserved') {
-            // Changing away from reserved status should clear reservation
-            this.tableStatuses[tableStatusIndex].reservation = null;
+        if (tableStatusIndex !== -1) {
+            const currentStatus = this.tableStatuses[tableStatusIndex];
+            
+            // Handle reservation implications
+            if (currentStatus.status === 'reserved' && newStatus !== 'reserved') {
+                // Changing away from reserved status should clear reservation
+                this.tableStatuses[tableStatusIndex].reservation = null;
+            }
+            
+            // Update status
+            this.tableStatuses[tableStatusIndex].status = newStatus;
+            
+            // Set reservation ID if provided
+            if (reservationId) {
+                this.tableStatuses[tableStatusIndex].reservation = reservationId;
+            }
+            
+            // Save to storage
+            this.storageManager.saveData('tableStatuses', this.tableStatuses);
+            
+            // Update views
+            this.updateDashboard();
+        } else {
+            // Create new status if it doesn't exist
+            this.tableStatuses.push({
+                tableId,
+                status: newStatus,
+                reservation: reservationId
+            });
+            
+            // Save to storage
+            this.storageManager.saveData('tableStatuses', this.tableStatuses);
+            
+            // Update views
+            this.updateDashboard();
         }
-        
-        // Update status
-        this.tableStatuses[tableStatusIndex].status = newStatus;
-        
-        // Set reservation ID if provided
-        if (reservationId) {
-            this.tableStatuses[tableStatusIndex].reservation = reservationId;
-        }
-        
-        // Save to storage
-        this.storageManager.saveData('tableStatuses', this.tableStatuses);
-        
-        // Update views
-        this.updateDashboard();
-    } else {
-        // Create new status if it doesn't exist
-        this.tableStatuses.push({
-            tableId,
-            status: newStatus,
-            reservation: reservationId
-        });
-        
-        // Save to storage
-        this.storageManager.saveData('tableStatuses', this.tableStatuses);
-        
-        // Update views
-        this.updateDashboard();
     }
-}
 }

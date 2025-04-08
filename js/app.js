@@ -7,14 +7,32 @@ import { StorageManager } from './storage.js';
 
 // Initialize the application
 document.addEventListener('DOMContentLoaded', () => {
+    // Check login status
+    checkLoginStatus();
+    
     // Initialize Storage Manager
     const storageManager = new StorageManager();
     
-    // Check if this is the first time loading the app
+    // Get selected restaurant
+    const selectedRestaurant = getSelectedRestaurant();
+    
+    // If no restaurant is selected, redirect to selection page
+    if (!selectedRestaurant) {
+        window.location.href = 'restaurant-selection.html';
+        return;
+    }
+    
+    // Set restaurant-specific storage prefix
+    storageManager.setPrefix(`tableMgr_${selectedRestaurant}_`);
+    
+    // Check if this is the first time loading this restaurant
     if (!storageManager.hasData('appInitialized')) {
         // Initialize with default data
         initializeDefaultData(storageManager);
     }
+    
+    // Update restaurant name in the UI
+    updateRestaurantInfo(storageManager, selectedRestaurant);
     
     // Initialize modules
     const tableConfigManager = new TableConfigManager(storageManager);
@@ -31,6 +49,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Set up sidebar toggle
     setupSidebarToggle();
     
+    // Set up user menu
+    setupUserMenu();
+    
     // Initialize active module based on URL or default to dashboard
     const activeModule = getActiveModuleFromUrl() || 'dashboard';
     activateModule(activeModule);
@@ -40,6 +61,125 @@ document.addEventListener('DOMContentLoaded', () => {
     dashboardManager.renderFloorView();
     dashboardManager.updateUpcomingReservations();
 });
+
+// Check if user is logged in
+function checkLoginStatus() {
+    const isLoggedIn = sessionStorage.getItem('isLoggedIn');
+    
+    if (!isLoggedIn) {
+        // Redirect to login page
+        window.location.href = 'login.html';
+    }
+}
+
+// Get selected restaurant ID from URL or session storage
+function getSelectedRestaurant() {
+    // Check URL parameters first
+    const urlParams = new URLSearchParams(window.location.search);
+    const restaurantParam = urlParams.get('restaurant');
+    
+    if (restaurantParam) {
+        // Save to session storage and return
+        sessionStorage.setItem('selectedRestaurant', restaurantParam);
+        return restaurantParam;
+    }
+    
+    // Otherwise check session storage
+    return sessionStorage.getItem('selectedRestaurant');
+}
+
+// Update restaurant name in the UI
+function updateRestaurantInfo(storageManager, restaurantId) {
+    // Get restaurant data from the main restaurants list
+    const mainStorage = new StorageManager(); // Uses the default prefix
+    const restaurants = mainStorage.getData('restaurants');
+    
+    if (restaurants) {
+        const restaurant = restaurants.find(r => r.id === restaurantId);
+        
+        if (restaurant) {
+            // Update restaurant name in the sidebar
+            const brandTitle = document.querySelector('.brand h1');
+            if (brandTitle) {
+                brandTitle.textContent = restaurant.name;
+            }
+        }
+    }
+}
+
+// Set up user menu
+function setupUserMenu() {
+    // Display username
+    const username = sessionStorage.getItem('currentUser');
+    const usernameDisplay = document.getElementById('username-display');
+    
+    if (username && usernameDisplay) {
+        usernameDisplay.textContent = username;
+    }
+    
+    // Get selected restaurant info for the header
+    const selectedRestaurantId = getSelectedRestaurant();
+    if (selectedRestaurantId) {
+        // Get restaurant data from main storage
+        const mainStorage = new StorageManager();
+        const restaurants = mainStorage.getData('restaurants');
+        
+        if (restaurants) {
+            const restaurant = restaurants.find(r => r.id === selectedRestaurantId);
+            if (restaurant) {
+                // Update restaurant name in the header/sidebar
+                const brandTitle = document.querySelector('.brand h1');
+                if (brandTitle) {
+                    brandTitle.textContent = restaurant.name;
+                }
+                
+                // Fix: Remove any unwanted text in the header
+                const extraElements = document.querySelectorAll('.top-bar .extra-text');
+                extraElements.forEach(el => el.remove());
+            }
+        }
+    }
+    
+    // Add back to restaurants link to dropdown
+    const userMenu = document.querySelector('.user-menu');
+    
+    if (userMenu) {
+        // Create dropdown if it doesn't exist
+        if (!userMenu.querySelector('.dropdown')) {
+            const dropdown = document.createElement('div');
+            dropdown.className = 'dropdown';
+            dropdown.innerHTML = `
+                <i class="fas fa-chevron-down"></i>
+                <div class="dropdown-content">
+                    <a href="restaurant-selection.html" id="all-restaurants-link"><i class="fas fa-th-large"></i> All Restaurants</a>
+                    <a href="#" id="profile-link"><i class="fas fa-user-circle"></i> Profile</a>
+                    <a href="#" id="logout-link"><i class="fas fa-sign-out-alt"></i> Log Out</a>
+                </div>
+            `;
+            userMenu.appendChild(dropdown);
+            
+            // Add logout event listener
+            const logoutLink = dropdown.querySelector('#logout-link');
+            if (logoutLink) {
+                logoutLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    logout();
+                });
+            }
+        }
+    }
+}
+
+// Logout function
+function logout() {
+    // Clear session storage
+    sessionStorage.removeItem('isLoggedIn');
+    sessionStorage.removeItem('currentUser');
+    sessionStorage.removeItem('selectedRestaurant');
+    
+    // Redirect to login page
+    window.location.href = 'login.html';
+}
 
 // Initialize app with default data
 function initializeDefaultData(storageManager) {
@@ -166,7 +306,8 @@ function setupNavigation() {
             activateModule(target);
             
             // Update URL without reloading the page
-            history.pushState({}, '', `?module=${target}`);
+            const restaurantId = getSelectedRestaurant();
+            history.pushState({}, '', `?restaurant=${restaurantId}&module=${target}`);
         });
     });
 }

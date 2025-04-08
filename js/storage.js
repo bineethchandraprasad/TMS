@@ -1,7 +1,13 @@
 // storage.js - Manages local storage operations
 export class StorageManager {
-    constructor() {
-        this.storagePrefix = 'tableMgr_';
+    constructor(prefix) {
+        // Default prefix for general data
+        this.storagePrefix = prefix || 'tableMgr_';
+    }
+    
+    // Set storage prefix (for multi-restaurant support)
+    setPrefix(prefix) {
+        this.storagePrefix = prefix;
     }
     
     // Save data to localStorage
