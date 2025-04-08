@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Table Management System</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <meta name="description" content="A modern restaurant table management system">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="brand">
+                <i class="fas fa-utensils"></i>
+                <h1>TableMaster</h1>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item active" data-target="dashboard">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </li>
+                <li class="nav-item" data-target="table-config">
+                    <i class="fas fa-table"></i>
+                    <span>Table Configuration</span>
+                </li>
+                <li class="nav-item" data-target="bookings">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Bookings</span>
+                </li>
+                <li class="nav-item" data-target="settings">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </li>
+            </ul>
+            <div class="theme-toggle">
+                <i class="fas fa-moon"></i>
+                <span>Dark Mode</span>
+                <label class="switch">
+                    <input type="checkbox" id="theme-switch">
+                    <span class="slider round"></span>
+                </label>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="content">
+            <!-- Top Bar -->
+            <div class="top-bar">
+                <div class="toggle-sidebar">
+                    <i class="fas fa-bars"></i>
+                </div>
+                <div class="search-bar">
+                    <input type="text" placeholder="Search...">
+                    <i class="fas fa-search"></i>
+                </div>
+                <div class="user-menu">
+                    <span>Admin User</span>
+                    <div class="avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page Content -->
+            <div class="page-content">
+                <!-- Dashboard View -->
+                <section id="dashboard" class="section active">
+                    <div class="section-header">
+                        <h2>Restaurant Dashboard</h2>
+                        <div class="date-display">Tuesday, April 01, 2025</div>
+                    </div>
+
+                    <!-- Stats Overview -->
+                    <div class="stats-container">
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="stat-details">
+                                <h3>Current Guests</h3>
+                                <p class="stat-value" id="current-guests">0</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-chair"></i>
+                            </div>
+                            <div class="stat-details">
+                                <h3>Total Capacity</h3>
+                                <p class="stat-value" id="total-capacity">0</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-percentage"></i>
+                            </div>
+                            <div class="stat-details">
+                                <h3>Occupancy</h3>
+                                <p class="stat-value" id="occupancy-percentage">0%</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="stat-details">
+                                <h3>Avg. Dining Time</h3>
+                                <p class="stat-value" id="avg-dining-time">0 min</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Floor View -->
+                    <div class="floor-view-container">
+                        <div class="floor-header">
+                            <h3>Floor View</h3>
+                            <div class="floor-controls">
+                                <button class="btn" id="refresh-floor">
+                                    <i class="fas fa-sync-alt"></i> Refresh
+                                </button>
+                            </div>
+                        </div>
+                        <div class="table-status-legend">
+                            <div class="status-item">
+                                <div class="status-color available"></div>
+                                <span>Available</span>
+                            </div>
+                            <div class="status-item">
+                                <div class="status-color occupied"></div>
+                                <span>Occupied</span>
+                            </div>
+                            <div class="status-item">
+                                <div class="status-color reserved"></div>
+                                <span>Reserved</span>
+                            </div>
+                            <div class="status-item">
+                                <div class="status-color cleaning"></div>
+                                <span>Cleaning</span>
+                            </div>
+                        </div>
+                        <div class="floor-view" id="dashboard-floor-view">
+                            <!-- Tables will be dynamically rendered here -->
+                        </div>
+                    </div>
+
+                    <!-- Upcoming Reservations -->
+                    <div class="upcoming-reservations">
+                        <h3>Upcoming Reservations</h3>
+                        <div class="reservation-list" id="upcoming-reservations-list">
+                            <!-- Reservations will be dynamically loaded here -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Table Configuration View -->
+                <section id="table-config" class="section">
+                    <div class="section-header">
+                        <h2>Table Configuration</h2>
+                        <div class="action-buttons">
+                            <button class="btn primary" id="save-layout">
+                                <i class="fas fa-save"></i> Save Layout
+                            </button>
+                            <button class="btn" id="clear-layout">
+                                <i class="fas fa-trash"></i> Clear
+                            </button>
+                            <button class="btn" id="toggle-grid">
+                                <i class="fas fa-th"></i> Toggle Grid
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="config-container">
+                        <!-- Toolbox -->
+                        <div class="config-toolbox">
+                            <h3>Table Shapes</h3>
+                            <div class="tool-items">
+                                <div class="tool-item" draggable="true" data-shape="round">
+                                    <div class="table-preview round"></div>
+                                    <span>Round</span>
+                                </div>
+                                <div class="tool-item" draggable="true" data-shape="square">
+                                    <div class="table-preview square"></div>
+                                    <span>Square</span>
+                                </div>
+                                <div class="tool-item" draggable="true" data-shape="rectangle">
+                                    <div class="table-preview rectangle"></div>
+                                    <span>Rectangle</span>
+                                </div>
+                            </div>
+
+                            <h3>Sections</h3>
+                            <div class="section-selector">
+                                <select id="section-select">
+                                    <option value="main">Main Floor</option>
+                                    <option value="patio">Patio</option>
+                                    <option value="bar">Bar Area</option>
+                                    <option value="private">Private Room</option>
+                                </select>
+                                <button class="btn small" id="add-section">
+                                    <i class="fas fa-plus"></i> Add
+                                </button>
+                            </div>
+
+                            <h3>Table Properties</h3>
+                            <form id="table-properties-form" class="property-form">
+                                <div class="form-group">
+                                    <label for="table-id">Table Number</label>
+                                    <input type="text" id="table-id" placeholder="Table #" disabled>
+                                </div>
+                                <div class="form-group">
+                                    <label for="seating-capacity">Capacity</label>
+                                    <input type="number" id="seating-capacity" min="1" max="20" value="4" disabled>
+                                </div>
+                                <div class="form-group">
+                                    <label for="table-section">Section</label>
+                                    <select id="table-section" disabled>
+                                        <option value="main">Main Floor</option>
+                                        <option value="patio">Patio</option>
+                                        <option value="bar">Bar Area</option>
+                                        <option value="private">Private Room</option>
+                                    </select>
+                                </div>
+                                <div class="form-group checkbox">
+                                    <label for="is-vip">VIP Table</label>
+                                    <input type="checkbox" id="is-vip" disabled>
+                                </div>
+                                <button type="submit" class="btn primary" id="update-table" disabled>
+                                    Update Table
+                                </button>
+                                <button type="button" class="btn danger" id="delete-table" disabled>
+                                    Delete Table
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- Floor Plan Canvas -->
+                        <div class="floor-plan-container">
+                            <div class="floor-plan" id="floor-plan-canvas">
+                                <!-- Tables will be added here during configuration -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Bookings View -->
+                <section id="bookings" class="section">
+                    <div class="section-header">
+                        <h2>Manage Bookings</h2>
+                        <div class="action-buttons">
+                            <button class="btn primary" id="new-booking">
+                                <i class="fas fa-plus"></i> New Booking
+                            </button>
+                            <div class="view-selector">
+                                <button class="btn view-btn active" data-view="list">
+                                    <i class="fas fa-list"></i>
+                                </button>
+                                <button class="btn view-btn" data-view="calendar">
+                                    <i class="fas fa-calendar-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Booking Filter Controls -->
+                    <div class="booking-filters">
+                        <div class="date-filter">
+                            <label for="booking-date">Date</label>
+                            <input type="date" id="booking-date">
+                        </div>
+                        <div class="search-filter">
+                            <input type="text" placeholder="Search guest name...">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <div class="party-size-filter">
+                            <label for="party-size">Party Size</label>
+                            <select id="party-size">
+                                <option value="any">Any</option>
+                                <option value="1-2">1-2</option>
+                                <option value="3-4">3-4</option>
+                                <option value="5-8">5-8</option>
+                                <option value="9+">9+</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Booking Views -->
+                    <div class="booking-views">
+                        <!-- List View -->
+                        <div id="list-view" class="booking-view active">
+                            <table class="booking-table">
+                                <thead>
+                                    <tr>
+                                        <th>Time</th>
+                                        <th>Guest Name</th>
+                                        <th>Phone</th>
+                                        <th>Party Size</th>
+                                        <th>Table</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="booking-list">
+                                    <!-- Bookings will be dynamically loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Calendar View -->
+                        <div id="calendar-view" class="booking-view">
+                            <div class="calendar-header">
+                                <button class="btn" id="prev-day">
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                                <h3 id="calendar-date">Today</h3>
+                                <button class="btn" id="next-day">
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
+                            <div class="calendar-grid" id="booking-calendar">
+                                <!-- Calendar will be rendered here -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Settings View -->
+                <section id="settings" class="section">
+                    <div class="section-header">
+                        <h2>System Settings</h2>
+                    </div>
+                    <div class="settings-container">
+                        <div class="settings-card">
+                            <h3>Restaurant Information</h3>
+                            <form id="restaurant-info-form">
+                                <div class="form-group">
+                                    <label for="restaurant-name">Restaurant Name</label>
+                                    <input type="text" id="restaurant-name" placeholder="Enter restaurant name">
+                                </div>
+                                <div class="form-group">
+                                    <label for="opening-time">Opening Time</label>
+                                    <input type="time" id="opening-time">
+                                </div>
+                                <div class="form-group">
+                                    <label for="closing-time">Closing Time</label>
+                                    <input type="time" id="closing-time">
+                                </div>
+                                <div class="form-group">
+                                    <label for="reservation-duration">Default Reservation Duration (minutes)</label>
+                                    <input type="number" id="reservation-duration" min="30" step="15" value="90">
+                                </div>
+                                <button type="submit" class="btn primary">Save Settings</button>
+                            </form>
+                        </div>
+
+                        <div class="settings-card">
+                            <h3>Data Management</h3>
+                            <div class="data-actions">
+                                <button class="btn" id="export-data">
+                                    <i class="fas fa-download"></i> Export Data
+                                </button>
+                                <button class="btn" id="import-data">
+                                    <i class="fas fa-upload"></i> Import Data
+                                </button>
+                                <button class="btn danger" id="reset-data">
+                                    <i class="fas fa-exclamation-triangle"></i> Reset All Data
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <!-- New/Edit Booking Modal -->
+    <div class="modal" id="booking-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="booking-modal-title">New Booking</h2>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="booking-form">
+                    <div class="form-group">
+                        <label for="guest-name">Guest Name*</label>
+                        <input type="text" id="guest-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="guest-phone">Phone Number*</label>
+                        <input type="tel" id="guest-phone" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="guest-email">Email</label>
+                        <input type="email" id="guest-email">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group half">
+                            <label for="booking-date-input">Date*</label>
+                            <input type="date" id="booking-date-input" required>
+                        </div>
+                        <div class="form-group half">
+                            <label for="booking-time">Time*</label>
+                            <input type="time" id="booking-time" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group half">
+                            <label for="party-size-input">Party Size*</label>
+                            <input type="number" id="party-size-input" min="1" value="2" required>
+                        </div>
+                        <div class="form-group half">
+                            <label for="duration">Duration (min)</label>
+                            <input type="number" id="duration" min="30" step="15" value="90">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="special-requests">Special Requests</label>
+                        <textarea id="special-requests" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Assign Table</label>
+                        <div class="table-assignment" id="table-assignment">
+                            <!-- Available tables will be shown here -->
+                        </div>
+                    </div>
+                    <input type="hidden" id="booking-id">
+                    <div class="form-actions">
+                        <button type="button" class="btn" id="cancel-booking">Cancel</button>
+                        <button type="submit" class="btn primary" id="save-booking">Save Booking</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table Details Modal -->
+    <div class="modal" id="table-details-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Table Details</h2>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="table-details" id="table-details-content">
+                    <!-- Table details will be dynamically loaded here -->
+                </div>
+                <div class="status-actions">
+                    <h3>Change Status</h3>
+                    <div class="status-buttons">
+                        <button class="btn status-btn available" data-status="available">Available</button>
+                        <button class="btn status-btn occupied" data-status="occupied">Occupied</button>
+                        <button class="btn status-btn cleaning" data-status="cleaning">Cleaning</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/app.js" type="module"></script>
+</body>
+</html>
